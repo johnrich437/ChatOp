@@ -6,9 +6,10 @@ angular.module('Chatop')
     .controller('ChatCtrl', function ($scope, $interval, $http, API) {
 
         var vm = this;
-
-        vm.username = 'Matt';
-
+        API.GetUserName()
+            .then(function (response) {
+                vm.username = response.data.username;
+            });
         $interval(function () {
             $scope.getMessage()
         }, 1000)
@@ -18,12 +19,18 @@ angular.module('Chatop')
         $scope.getMessage = function () {
 
             API.getMessages(bigID)
-                .then(function(response) {
+                .then(function (response) {
                     var messages = response.data;
                     Array.prototype.push.apply(vm.messages, messages);
-                    bigID = vm.messages[vm.messages.length -1]._id;
-                    $("#messagesChat").scrollTop($("#messagesChat")[0].scrollHeight);
-            });
+                    bigID = vm.messages[vm.messages.length - 1]._id;
+                    var elem = document.getElementById('messagesChat');
+                    if (messages.length > 0) {
+                        setTimeout(function () {
+                            elem.scrollTop = elem.scrollHeight;
+                        }, 100);
+                    }
+                    //$("#messagesChat").scrollTop($("#messagesChat")[0].scrollHeight);
+                });
         };
         vm.sendMessage = function (message) {
             API.sendMessage(message);
@@ -47,3 +54,22 @@ angular.module('Chatop')
                 });
         }
     }]);
+angular.module('Chatop')
+    .controller('SignupCtrl', function ($scope, API) {
+        $scope.signUp = function () {
+            API.signUp($scope.user).then(function (response) {
+                if (response.data.message == "") {
+                    location.href = "/";
+                }
+                else {
+
+                }
+            });
+
+        }
+    })
+    .config(function ($mdThemingProvider) {
+        // Configure a dark theme with primary foreground yellow
+        $mdThemingProvider.theme('docs-dark', 'default')
+            .primaryPalette('grey');
+    });

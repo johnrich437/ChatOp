@@ -23,10 +23,17 @@ var messageObjectSchema = new mongoose.Schema({
     content: String,
     username: String
 });
-messageObjectSchema.plugin(autoIncrement.plugin,'messageObject')
+var UserSchema = new mongoose.Schema({
+    firstName: String,
+    lastName:String,
+    username: String,
+    password: String
+});
+messageObjectSchema.plugin(autoIncrement.plugin, 'messageObject')
 // Compile a 'Movie' model using the movieSchema as the structure.
 // Mongoose also creates a MongoDB collection called 'Movies' for these documents.
 var messageObject = db.model('messageObject', messageObjectSchema, 'messages')
+var User = db.model('User', UserSchema, 'users')
 
 fs.writeFile('messages.json', "[]", 'utf-8', function (err) {
     if (err) throw err;
@@ -39,13 +46,14 @@ app.use(bodyParser());
 app.use(cookieParser());
 
 app.use(expressSession({
-    secret: "session secret" ,
-    store:new MongoStore({
+    secret: "ChatOp",
+    store: new MongoStore({
         db: 'learning',
         host: 'localhost',
         port: 27017,
         collection: 'session',
-        auto_reconnect:true
+        resave: true,
+        saveUninitialized: true
     })
 }));
 
@@ -56,35 +64,10 @@ var getMessages = function (req, res) {
 
     var url_parts = url.parse(req.url, true);
     var messagesNew = [];
-    messageObject.find({_id:{ $gt: parseInt(url_parts.query.id) } }).exec(function (err, messages) {
+    messageObject.find({_id: {$gt: parseInt(url_parts.query.id)}}).exec(function (err, messages) {
         if (err) return console.error(err);
         res.send(messages);
     });
-    /*    if (messages.length > 4) {
-     messages = messages.slice(messages.length - 5, messages.length + 1)
-     }
-     if (id > parseInt(url_parts.query.id) + 5) {
-     fs.readFile('messages.json', 'utf-8', function (err, data) {
-     if (err) throw err;
-     var messagesFormFile = JSON.parse(data);
-     messagesFormFile.forEach(function (message) {
-     if (message.id > url_parts.query.id || url_parts.query.id == 0) {
-     messagesNew.push(message);
-     }
-     });
-     res.send(messagesNew);
-     });
-
-     }
-     else {
-     messages.forEach(function (message) {
-     if (message.id > url_parts.query.id || url_parts.query.id == 0) {
-     messagesNew.push(message);
-     }
-     });
-     res.send(messagesNew);
-
-     }*/
 };
 
 var sendMessage = function (req, res) {
@@ -124,26 +107,47 @@ var insertDocument = function (db, doc, callback) {
         callback(result);
     });
 };
+var getUserName = function (req, res) {
+    res.send("{\"username\":\"" + req.session.username + "\"}");
+}
 var login = function (req, res) {
     req.session.username = req.body.username;
     res.send("{\"message\":\"ok\"}");
 
 }
+var signup = function (req, res) {
+    console.log("aa");
+    var user = new User({
+        firstName: req.body.firstName,
+        lastName:req.body.lastName,
+        username: req.body.username,
+        password: req.body.password
 
+    });
+    user.save(function (err) {
+        if (err) {
+            return err;
+        }
+        else {
+            console.log("User saved");
+        }
+    });
+}
 var homePage = function (req, res) {
     if (!req.session.username) {
         res.redirect("/login")
     }
-    else{
-        res.sendfile( './public/index.html' );
+    else {
+        res.sendfile('./public/index.html');
     }
 }
 
+app.get('/getUserName', getUserName)
 app.get('/', homePage);
 app.post('/login', login)
+app.post('/signup', signup)
 app.get('/getMessages', getMessages);
 app.post('/sendMessage', sendMessage);
-
 app.set('views', __dirname + '/public');
 app.engine('html', require('ejs').renderFile);
 app.set('view engine', 'html');
@@ -154,8 +158,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // All other URLs -> show index.html
 //---------------------------------
 
-app.get( '*', function( req, res )
-{
-    res.sendfile( './public/index.html' );
+app.get('*', function (req, res) {
+    res.sendfile('./public/index.html');
 });
 app.listen(3000);

@@ -8,7 +8,7 @@
   function SimpleChat() {
 
     var chatTemplate =
-    '<div class="row chat-window col-xs-5 col-md-3" ng-class="vm.theme" style="margin-left:10px;">' +
+    '<div class="row chat-window col-xs-5 col-md-5" ng-class="vm.theme" style="margin-left:10px;">' +
       '<div class="col-xs-12 col-md-12">' +
         '<div class="panel">' +
           '<div class="panel-heading chat-top-bar">' +

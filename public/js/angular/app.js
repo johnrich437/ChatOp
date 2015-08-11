@@ -3,14 +3,15 @@
 //---------------------------
 
 angular.module('Chatop',
-        [
-            'ngRoute',
-            'ngAnimate',
-            'irontec.simpleChat'
-        ])
+    [
+        'ngRoute',
+        'ngAnimate',
+        'irontec.simpleChat',
+        'ngMaterial'
+        //'ngMessages'
+    ])
 
-    .config( ['$routeProvider', '$locationProvider', function ( $routeProvider, $locationProvider )
-    {
+    .config(['$routeProvider', '$locationProvider', function ($routeProvider, $locationProvider) {
         //---------------------------
         // Nice URLs
         //---------------------------
@@ -26,21 +27,24 @@ angular.module('Chatop',
 
         $routeProvider.when('/',
             {
-                controller:     'ChatCtrl as vm',
-                templateUrl:    '/views/chat.html'
+                controller: 'ChatCtrl as vm',
+                templateUrl: '/views/chat.html'
             });
         $routeProvider.when('/login',
             {
-                controller:     'LoginCtrl',
-                templateUrl:    '/views/login.html'
+                controller: 'LoginCtrl',
+                templateUrl: '/views/login.html'
             });
-        ///login
+        $routeProvider.when('/signup',
+            {
+                controller: 'SignupCtrl',
+                templateUrl: '/views/signup.html'
+            });
     }])
 
     //---------------------------
     // On application run
     //---------------------------
 
-    .run(['$rootScope', function ($rootScope)
-    {
+    .run(['$rootScope', function ($rootScope) {
     }]);
